@@ -1,53 +1,9 @@
 PCA + KNN on MNIST
 
-A compact reproducible implementation demonstrating how Principal Component Analysis (PCA) can be used to compress MNIST digit images before classification with K-Nearest Neighbors (KNN) — with direct dataset loading from OpenML (and a tensorflow.keras fallback). 
+A compact, reproducible implementation that demonstrates how Principal Component Analysis (PCA) can be used to compress MNIST digit images prior to classification with K-Nearest Neighbors (KNN). The notebook/script automatically downloads the MNIST dataset from OpenML and falls back to tensorflow.keras.datasets if OpenML is unavailable. It builds a scikit-learn Pipeline (StandardScaler → PCA → KNN), compares KNN performance with and without PCA, visualizes PCA reconstructions and top PCA components, reports accuracy and per-class metrics, and saves the best models and GridSearchCV results for later inspection.
 
-How it works (short)
+The repository contains a ready-to-run Jupyter Notebook that loads MNIST (70k samples) via fetch_openml('mnist_784') with a Keras fallback. Two pipelines are used: a baseline pipeline consisting of StandardScaler() followed by a KNeighborsClassifier(), and a PCA pipeline consisting of StandardScaler() followed by PCA(n_components=k) and then KNeighborsClassifier(). GridSearchCV is used to tune KNN hyperparameters such as n_neighbors and weights for both pipelines; the default search grid is intentionally small to keep runtimes reasonable, but it can be expanded for more thorough tuning.
 
-Load MNIST
-fetch_openml('mnist_784') is used to fetch MNIST (70k samples). If OpenML is unavailable, the code falls back to tensorflow.keras.datasets.mnist.
+For evaluation and visualization, the notebook prints the best GridSearchCV parameters and CV accuracy, displays test accuracy and full classification reports for both approaches, and shows confusion matrices so you can inspect per-class errors. To give a visual sense of information loss from compression, a small selection of test images is displayed side-by-side as the original images and as PCA-reconstructed images obtained using pca.inverse_transform. The notebook also plots the first N PCA components reshaped to 28×28 so you can see the principal directions (they often look like basis strokes).
 
-Pipelines
-
-Baseline pipeline: StandardScaler() → KNeighborsClassifier()
-
-PCA pipeline: StandardScaler() → PCA(n_components=k) → KNeighborsClassifier()
-
-Model selection
-GridSearchCV is used to tune KNN hyperparameters (n_neighbors, weights) for both pipelines. For speed, the default grid is small; expand as desired.
-
-Evaluation & visualization
-
-Accuracy, classification report, and confusion matrix are printed for both approaches.
-
-A small set of test images is shown original vs PCA-reconstructed (using pca.inverse_transform) so you can visually inspect information loss.
-
-PCA components (reshaped to 28×28) are plotted to show the principal directions learned.
-
-What you will see / outputs
-
-Console output containing:
-
-Best GridSearchCV parameters and CV accuracy
-
-Test accuracy for both models
-
-Classification reports
-
-Saved files in results/ (or results_visual/ depending on the script version):
-
-cv_results.csv
-
-best_pipeline.joblib (serialized best estimator)
-
-confusion_matrix.png and explained_variance_cumulative.png (plots)
-
-knn_no_pca.joblib, knn_pca_k{K}.joblib (visual experiment script)
-
-Visual plots:
-
-Original images (from test set) vs PCA reconstructions — useful to see how compression affects digits.
-
-First N PCA components displayed as 28×28 images (they look like “basis strokes”).
-
-Confusion matrices for both pipelines (per-class errors).
+At runtime the notebook saves useful artifacts into a results folder. Typical saved outputs include cv_results.csv, the serialized best estimator best_pipeline.joblib (and separate files such as knn_no_pca.joblib and knn_pca_k{K}.joblib for visual experiments), confusion_matrix.png, and explained_variance_cumulative.png. The visual outputs you will see include original test images versus PCA reconstructions, the first N PCA components displayed as 28×28 images, and confusion matrices for both pipelines, which together make it easy to compare the quantitative and qualitative tradeoffs of using PCA before KNN.
